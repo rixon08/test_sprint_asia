@@ -7,4 +7,8 @@ abstract class AbstractTodoListApi {
 
   Future<ApiResponse<List<TaskModel>?>> getDataCompletedTask(DateTime date);
 
+  Future<ApiResponse<bool>> updateCheckTask(TaskModel task);
+
+  Future<ApiResponse<bool>> updateCheckSubTask(TaskModel task);
+
 }

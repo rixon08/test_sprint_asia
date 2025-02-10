@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:test_sprint_asia/core/network/utils/injection.dart';
+import 'package:test_sprint_asia/features/todo_list/presentation/pages/todo_list_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  initInjections();
   runApp(const MyApp());
 }
 
@@ -30,7 +33,7 @@ class MyApp extends StatelessWidget {
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        useMaterial3: false,
       ),
       home: TodoListPage(),
     );
@@ -45,12 +48,12 @@ class Task {
   Task({required this.title, this.isCompleted = false, this.subTasks});
 }
 
-class TodoListPage extends StatefulWidget {
+class TodoListPage1 extends StatefulWidget {
   @override
   _TodoListPageState createState() => _TodoListPageState();
 }
 
-class _TodoListPageState extends State<TodoListPage> {
+class _TodoListPageState extends State<TodoListPage1> {
   List<Task> tasks = [
     Task(title: "Buy groceries", subTasks: [
       Task(title: "Milk"),
