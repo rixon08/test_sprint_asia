@@ -11,4 +11,16 @@ abstract class AbstractTodoListApi {
 
   Future<ApiResponse<bool>> updateCheckSubTask(TaskModel task);
 
+  Future<ApiResponse<bool>> addDataTask(TaskModel task);
+
+  Future<ApiResponse<bool>> addDataSubTask(TaskModel task);
+
+  Future<ApiResponse<bool>> updateDataTask(TaskModel task);
+
+  Future<ApiResponse<bool>> updateDataSubTask(TaskModel task);
+
+  Future<ApiResponse<bool>> deleteDataTask(TaskModel task);
+
+  Future<ApiResponse<bool>> deleteDataSubTask(TaskModel task);
+
 }

@@ -12,6 +12,10 @@ class TaskModel {
   String? idMaster;
   List<TaskModel>? subTasks;
 
+  bool get isMasterTask => subTasks == null || (subTasks != null && subTasks!.isNotEmpty);
+
+  bool get isSubTask => idMaster != null && idMaster!.isNotEmpty && subTasks == null;
+
   TaskModel(
       {required this.id,
       required this.title,

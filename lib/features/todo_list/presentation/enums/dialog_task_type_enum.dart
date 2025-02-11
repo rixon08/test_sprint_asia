@@ -1,0 +1,4 @@
+enum DialogTaskType {
+  add,
+  edit,
+}
