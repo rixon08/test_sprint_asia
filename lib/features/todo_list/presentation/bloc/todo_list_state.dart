@@ -23,3 +23,7 @@ final class TodoListCompletedTaskCompletedState extends TodoListState {
 
   TodoListCompletedTaskCompletedState(this.listTaskModel);
 }
+
+final class TodoListTabCompletedTaskState extends TodoListState {}
+
+final class TodoListTabOnGoingTaskState extends TodoListState {}

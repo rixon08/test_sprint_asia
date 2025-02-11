@@ -19,7 +19,7 @@ final class TodoListCheckTaskEvent extends TodoListEvent {
 }
 
 final class TodoListCheckSubTaskEvent extends TodoListEvent {
-  final TaskModel taskModel;
+  final SubTaskModel taskModel;
   final DateTime selectDateTask;
 
   TodoListCheckSubTaskEvent(this.taskModel, this.selectDateTask);
@@ -33,7 +33,7 @@ final class TodoListAddTaskEvent extends TodoListEvent {
 }
 
 final class TodoListAddSubTaskEvent extends TodoListEvent {
-  final TaskModel taskModel;
+  final SubTaskModel taskModel;
   final DateTime selectDateTask;
 
   TodoListAddSubTaskEvent(this.taskModel, this.selectDateTask);
@@ -47,7 +47,7 @@ final class TodoListUpdateTaskEvent extends TodoListEvent {
 }
 
 final class TodoListUpdateSubTaskEvent extends TodoListEvent {
-  final TaskModel taskModel;
+  final SubTaskModel taskModel;
   final DateTime selectDateTask;
 
   TodoListUpdateSubTaskEvent(this.taskModel, this.selectDateTask);
@@ -61,8 +61,20 @@ final class TodoListDeleteTaskEvent extends TodoListEvent {
 }
 
 final class TodoListDeleteSubTaskEvent extends TodoListEvent {
-  final TaskModel taskModel;
+  final SubTaskModel taskModel;
   final DateTime selectDateTask;
 
   TodoListDeleteSubTaskEvent(this.taskModel, this.selectDateTask);
+}
+
+final class TodoListTabOnGoingTaskEvent extends TodoListEvent {
+  final DateTime selectDateTask;
+
+  TodoListTabOnGoingTaskEvent(this.selectDateTask);
+}
+
+final class TodoListTabCompleteTaskEvent extends TodoListEvent {
+  final DateTime selectDateTask;
+
+  TodoListTabCompleteTaskEvent(this.selectDateTask);
 }

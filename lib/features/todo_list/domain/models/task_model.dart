@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:test_sprint_asia/features/todo_list/domain/models/sub_task_model.dart';
 
 part 'task_model.g.dart';
 
@@ -9,12 +10,18 @@ class TaskModel {
   bool isCompleted;
   DateTime date;
   DateTime? deadline;
-  String? idMaster;
-  List<TaskModel>? subTasks;
+  List<SubTaskModel>? subTasks;
 
-  bool get isMasterTask => subTasks == null || (subTasks != null && subTasks!.isNotEmpty);
+  bool get isHasSubTaks => subTasks != null && subTasks!.isNotEmpty;
 
-  bool get isSubTask => idMaster != null && idMaster!.isNotEmpty && subTasks == null;
+  int get precentageCompletedSubTask {
+    if (isHasSubTaks){
+      var completedSubTask = subTasks!.where((e)=>e.isCompleted).toList();
+      return ((completedSubTask.length / subTasks!.length) * 100 ).round();
+    }
+    return 0;
+  }
+
 
   TaskModel(
       {required this.id,
@@ -22,17 +29,15 @@ class TaskModel {
       required this.date,
       this.deadline,
       this.isCompleted = false,
-      this.subTasks,
-      this.idMaster});
+      this.subTasks});
 
-  TaskModel copyWith({bool? isCompleted, List<TaskModel>? subTasks}) {
+  TaskModel copyWith({bool? isCompleted, List<SubTaskModel>? subTasks}) {
     return TaskModel(
       id: id,
       title: title,
       date: date,
       isCompleted: isCompleted ?? this.isCompleted,
-      subTasks: subTasks ?? this.subTasks,
-      idMaster: idMaster
+      subTasks: subTasks ?? this.subTasks
     );
   }
 

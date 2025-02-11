@@ -1,25 +1,25 @@
 import 'package:test_sprint_asia/core/network/api_response.dart';
+import 'package:test_sprint_asia/features/todo_list/domain/models/sub_task_model.dart';
 import 'package:test_sprint_asia/features/todo_list/domain/models/task_model.dart';
 import 'package:test_sprint_asia/features/todo_list/domain/repositories/abstract_todo_list_api.dart';
 
 class GetTaskImplApi extends AbstractTodoListApi {
   List<TaskModel> tasks = [
     TaskModel(id: "1", date: DateTime.now(), title: "Buy groceries", subTasks: [
-      TaskModel(id: "2", date: DateTime.now(), title: "Milk", idMaster: "1"),
-      TaskModel(id: "3", date: DateTime.now(), title: "Bread", idMaster: "1"),
-      TaskModel(id: "4", date: DateTime.now(), title: "Eggs", idMaster: "1"),
+      SubTaskModel(id: "2", title: "Milk", idMaster: "1"),
+      SubTaskModel(id: "3", title: "Bread", idMaster: "1"),
+      SubTaskModel(id: "4", title: "Eggs", idMaster: "1"),
     ]),
     TaskModel(id: "5", date: DateTime.now(), title: "Workout"),
     TaskModel(id: "6", date: DateTime.now(), title: "Prepare presentation"),
     TaskModel(id: "7", date: DateTime.now(), title: "Learn Flutter", subTasks: [
-      TaskModel(id: "8", date: DateTime.now(), title: "Widgets", idMaster: "7"),
-      TaskModel(
+      SubTaskModel(id: "8", title: "Widgets", idMaster: "7"),
+      SubTaskModel(
           id: "9",
-          date: DateTime.now(),
           title: "State Management",
           idMaster: "7"),
-      TaskModel(
-          id: "10", date: DateTime.now(), title: "Navigation", idMaster: "7"),
+      SubTaskModel(
+          id: "10", title: "Navigation", idMaster: "7"),
     ])
   ];
 
@@ -61,7 +61,7 @@ class GetTaskImplApi extends AbstractTodoListApi {
   }
 
   @override
-  Future<ApiResponse<bool>> addDataSubTask(TaskModel task) async {
+  Future<ApiResponse<bool>> addDataSubTask(SubTaskModel task) async {
     tasks = tasks.map((e) {
       if (e.id == task.idMaster) {
         if (e.subTasks == null) {
@@ -84,7 +84,7 @@ class GetTaskImplApi extends AbstractTodoListApi {
   }
 
   @override
-  Future<ApiResponse<bool>> deleteDataSubTask(TaskModel task) async {
+  Future<ApiResponse<bool>> deleteDataSubTask(SubTaskModel task) async {
     int indexMasterTask = tasks.indexWhere((e) => e.id == task.idMaster);
     int indexDeleted =
         tasks[indexMasterTask].subTasks!.indexWhere((e) => e.id == task.id);
@@ -100,7 +100,7 @@ class GetTaskImplApi extends AbstractTodoListApi {
   }
 
   @override
-  Future<ApiResponse<bool>> updateCheckSubTask(TaskModel task) async {
+  Future<ApiResponse<bool>> updateCheckSubTask(SubTaskModel task) async {
     tasks = tasks.map((e) {
       if (e.id == task.idMaster &&
           e.subTasks != null &&
@@ -132,7 +132,7 @@ class GetTaskImplApi extends AbstractTodoListApi {
   }
 
   @override
-  Future<ApiResponse<bool>> updateDataSubTask(TaskModel task) async {
+  Future<ApiResponse<bool>> updateDataSubTask(SubTaskModel task) async {
     tasks = tasks.map((e) {
       if (e.id == task.idMaster &&
           e.subTasks != null &&
@@ -140,7 +140,6 @@ class GetTaskImplApi extends AbstractTodoListApi {
         int countIsCompleted = 0;
         e.subTasks = e.subTasks!.map((st) {
           if (st.id == task.id) {
-            task.isCompleted = !task.isCompleted;
             countIsCompleted =
                 task.isCompleted ? countIsCompleted + 1 : countIsCompleted;
             return task;

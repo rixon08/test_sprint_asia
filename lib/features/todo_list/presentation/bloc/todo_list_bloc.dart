@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
+import 'package:test_sprint_asia/features/todo_list/domain/models/sub_task_model.dart';
 import 'package:test_sprint_asia/features/todo_list/domain/models/task_model.dart';
 import 'package:test_sprint_asia/features/todo_list/domain/usecases/add_sub_task_usecase.dart';
 import 'package:test_sprint_asia/features/todo_list/domain/usecases/add_task_usecase.dart';
@@ -98,6 +99,14 @@ class TodoListBloc extends Bloc<TodoListEvent, TodoListState> {
       if (result.isSuccess) {
         await getOnGoingTask(emit, event.selectDateTask);
       }
+    });
+
+    on<TodoListTabOnGoingTaskEvent>((event, emit) async {
+      emit(TodoListTabOnGoingTaskState());
+    });
+
+    on<TodoListTabCompleteTaskEvent>((event, emit) async {
+      emit(TodoListTabCompletedTaskState());
     });
   }
 

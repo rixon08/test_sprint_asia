@@ -15,9 +15,8 @@ TaskModel _$TaskModelFromJson(Map<String, dynamic> json) => TaskModel(
           : DateTime.parse(json['deadline'] as String),
       isCompleted: json['is_completed'] as bool? ?? false,
       subTasks: (json['sub_tasks'] as List<dynamic>?)
-          ?.map((e) => TaskModel.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => SubTaskModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-      idMaster: json['id_master'] as String?,
     );
 
 Map<String, dynamic> _$TaskModelToJson(TaskModel instance) => <String, dynamic>{
@@ -26,6 +25,5 @@ Map<String, dynamic> _$TaskModelToJson(TaskModel instance) => <String, dynamic>{
       'is_completed': instance.isCompleted,
       'date': instance.date.toIso8601String(),
       'deadline': instance.deadline?.toIso8601String(),
-      'id_master': instance.idMaster,
       'sub_tasks': instance.subTasks,
     };
