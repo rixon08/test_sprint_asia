@@ -32,4 +32,13 @@ class TaskModel {
 
   factory TaskModel.fromJson(Map<String, dynamic> json) =>
       _$TaskModelFromJson(json);
+
+  void setCompleteTask(bool isChecked) {
+    isCompleted = isChecked;
+    if (isChecked) {
+      completedDate = DateTime.now();
+    } else {
+      completedDate = null;
+    }
+  }
 }

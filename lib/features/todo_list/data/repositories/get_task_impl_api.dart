@@ -33,25 +33,6 @@ class GetTaskImplApi extends AbstractTodoListApi {
   }
 
   @override
-  Future<ApiResponse<bool>> updateCheckTask(TaskModel task) async {
-    tasks = tasks.map((e) {
-      if (e.id == task.id) {
-        task.isCompleted = !task.isCompleted;
-        if (task.subTasks != null && task.subTasks!.isNotEmpty) {
-          task.subTasks = task.subTasks!.map((st) {
-            st.isCompleted = task.isCompleted;
-            return st;
-          }).toList();
-        }
-        return task;
-      } else {
-        return e;
-      }
-    }).toList();
-    return ApiResponse(status: true, message: "success", data: true);
-  }
-
-  @override
   Future<ApiResponse<bool>> addDataSubTask(SubTaskModel task) async {
     tasks = tasks.map((e) {
       if (e.id == task.idMaster) {
@@ -80,6 +61,12 @@ class GetTaskImplApi extends AbstractTodoListApi {
     int indexDeleted =
         tasks[indexMasterTask].subTasks!.indexWhere((e) => e.id == task.id);
     tasks[indexMasterTask].subTasks!.removeAt(indexDeleted);
+    if (tasks[indexMasterTask].subTasks!.isNotEmpty){
+      var subTaskCompleted = tasks[indexMasterTask].subTasks!.where((e)=> e.isCompleted).toList();
+      if (subTaskCompleted.length == tasks[indexMasterTask].subTasks!.length){
+        tasks[indexMasterTask].setCompleteTask(true);
+      }
+    }
     return ApiResponse(status: true, message: "success", data: true);
   }
 
@@ -87,6 +74,25 @@ class GetTaskImplApi extends AbstractTodoListApi {
   Future<ApiResponse<bool>> deleteDataTask(TaskModel task) async {
     int indexDeleted = tasks.indexWhere((e) => e.id == task.id);
     tasks.removeAt(indexDeleted);
+    return ApiResponse(status: true, message: "success", data: true);
+  }
+
+  @override
+  Future<ApiResponse<bool>> updateCheckTask(TaskModel task) async {
+    tasks = tasks.map((e) {
+      if (e.id == task.id) {
+        task.setCompleteTask(!task.isCompleted);
+        if (task.subTasks != null && task.subTasks!.isNotEmpty) {
+          task.subTasks = task.subTasks!.map((st) {
+            st.isCompleted = task.isCompleted;
+            return st;
+          }).toList();
+        }
+        return task;
+      } else {
+        return e;
+      }
+    }).toList();
     return ApiResponse(status: true, message: "success", data: true);
   }
 
@@ -110,9 +116,9 @@ class GetTaskImplApi extends AbstractTodoListApi {
           }
         }).toList();
         if (countIsCompleted == e.subTasks!.length) {
-          e.isCompleted = true;
+          e.setCompleteTask(true);
         } else {
-          e.isCompleted = false;
+          e.setCompleteTask(false);
         }
         return e;
       } else {

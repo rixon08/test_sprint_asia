@@ -75,48 +75,6 @@ class TodoListPage extends StatelessWidget {
             return Column(
               mainAxisSize: MainAxisSize.max,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "TODAY",
-                            style: TextStyle(
-                                fontSize: 30, fontWeight: FontWeight.w700),
-                          ),
-                          SizedBox(
-                            height: 5,
-                          ),
-                          Text(
-                            convertDateToString(DateTime.now()),
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        ],
-                      ),
-                      // TextButton(
-                      //     onPressed: () async {
-                      //       var result =
-                      //           await _selectDate(context);
-                      //       if (result != null) {
-                      //         selectedDateTask = result;
-                      //         _bloc.add(TodoListGetOnGoingTaskEvent(
-                      //             selectedDateTask));
-                      //       }
-                      //     },
-                      //     child: Icon(size: 20, Icons.date_range))
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
                 Row(
                   mainAxisSize: MainAxisSize.max,
                   children: [
@@ -226,14 +184,19 @@ class TodoListPage extends StatelessWidget {
         Expanded(
           child: task.deadline == null
               ? Text(
-                  "${task.title}${task.subTasks != null && task.subTasks!.isNotEmpty ? " (${task.precentageCompletedSubTask}%)" : ""}", style: TextStyle(fontSize: 16))
+                  "${task.title}${task.subTasks != null && task.subTasks!.isNotEmpty ? " (${task.precentageCompletedSubTask}%)" : ""}",
+                  style: TextStyle(fontSize: 16))
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                        "${task.title}${task.subTasks != null && task.subTasks!.isNotEmpty ? " (${task.precentageCompletedSubTask}%)" : ""}", style: TextStyle(fontSize: 16)),
-                    Text("Deadline: ${convertDateTimeToString(task.deadline!)} ${DateTime.now().isAfter(task.deadline!) && task.isCompleted ? "(Due)" : ""}", style: TextStyle(fontSize: 12),)
+                        "${task.title}${task.subTasks != null && task.subTasks!.isNotEmpty ? " (${task.precentageCompletedSubTask}%)" : ""}",
+                        style: TextStyle(fontSize: 16)),
+                    Text(
+                      "Deadline: ${convertDateTimeToString(task.deadline!)} ${DateTime.now().isAfter(task.deadline!) && (task.completedDate == null || (task.completedDate != null && task.completedDate!.isAfter(task.deadline!))) ? "(Due)" : ""}",
+                      style: TextStyle(fontSize: 12),
+                    )
                   ],
                 ),
         )
