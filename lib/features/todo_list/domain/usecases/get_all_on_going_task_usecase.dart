@@ -8,8 +8,8 @@ class GetAllOnGoingTaskUseCase {
 
   GetAllOnGoingTaskUseCase(this.repository);
   
-  Future<ApiResponse<List<TaskModel>?>> call(DateTime date) async {
-    return await repository.getDataOnGoingTask(date);
+  Future<ApiResponse<List<TaskModel>?>> call() async {
+    return await repository.getDataOnGoingTask();
   }
 
 }

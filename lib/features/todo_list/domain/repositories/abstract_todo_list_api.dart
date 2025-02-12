@@ -4,9 +4,9 @@ import 'package:test_sprint_asia/features/todo_list/domain/models/task_model.dar
 
 abstract class AbstractTodoListApi {
 
-  Future<ApiResponse<List<TaskModel>?>> getDataOnGoingTask(DateTime date);
+  Future<ApiResponse<List<TaskModel>?>> getDataOnGoingTask();
 
-  Future<ApiResponse<List<TaskModel>?>> getDataCompletedTask(DateTime date);
+  Future<ApiResponse<List<TaskModel>?>> getDataCompletedTask();
 
   Future<ApiResponse<bool>> updateCheckTask(TaskModel task);
 

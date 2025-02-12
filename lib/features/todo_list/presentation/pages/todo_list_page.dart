@@ -17,11 +17,11 @@ import 'package:test_sprint_asia/features/todo_list/domain/usecases/update_data_
 import 'package:test_sprint_asia/features/todo_list/domain/usecases/update_data_task_usecase.dart';
 import 'package:test_sprint_asia/features/todo_list/presentation/bloc/todo_list_bloc.dart';
 import 'package:test_sprint_asia/features/todo_list/presentation/enums/dialog_task_type_enum.dart';
-import 'package:test_sprint_asia/main.dart';
 
 class TodoListPage extends StatelessWidget {
   TodoListBloc _bloc = TodoListBloc(
     getAllOnGoingTask: sl<GetAllOnGoingTaskUseCase>(),
+    getAllCompletedTask: sl<GetAllCompletedTaskUseCase>(),
     updateCheckTask: sl<UpdateCheckTaskUseCase>(),
     updateCheckSubTask: sl<UpdateCheckSubTaskUseCase>(),
     addTaskUseCase: sl<AddTaskUseCase>(),
@@ -30,12 +30,9 @@ class TodoListPage extends StatelessWidget {
     updateDataSubTaskUseCase: sl<UpdateDataSubTaskUseCase>(),
     deleteDataTaskUseCase: sl<DeleteDataTaskUseCase>(),
     deleteDataSubTaskUseCase: sl<DeleteDataSubTaskUseCase>(),
-  )..add(TodoListGetOnGoingTaskEvent(DateTime.now()));
+  )..add(TodoListGetOnGoingTaskEvent());
 
   List<TaskModel> tasksOnGoing = [];
-
-  DateTime selectedDateTask =
-      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
   bool isTabCompletedTask = false;
   bool isTabOnGoingTask = true;
@@ -90,7 +87,7 @@ class TodoListPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            titleDate(),
+                            "TODAY",
                             style: TextStyle(
                                 fontSize: 30, fontWeight: FontWeight.w700),
                           ),
@@ -98,22 +95,22 @@ class TodoListPage extends StatelessWidget {
                             height: 5,
                           ),
                           Text(
-                            convertDateToString(selectedDateTask),
+                            convertDateToString(DateTime.now()),
                             style: TextStyle(fontSize: 14),
                           ),
                         ],
                       ),
-                      TextButton(
-                          onPressed: () async {
-                            var result =
-                                await _selectDate(context, selectedDateTask);
-                            if (result != null) {
-                              selectedDateTask = result;
-                              _bloc.add(TodoListGetOnGoingTaskEvent(
-                                  selectedDateTask));
-                            }
-                          },
-                          child: Icon(size: 20, Icons.date_range))
+                      // TextButton(
+                      //     onPressed: () async {
+                      //       var result =
+                      //           await _selectDate(context);
+                      //       if (result != null) {
+                      //         selectedDateTask = result;
+                      //         _bloc.add(TodoListGetOnGoingTaskEvent(
+                      //             selectedDateTask));
+                      //       }
+                      //     },
+                      //     child: Icon(size: 20, Icons.date_range))
                     ],
                   ),
                 ),
@@ -128,16 +125,14 @@ class TodoListPage extends StatelessWidget {
                             isActive: isTabOnGoingTask,
                             title: "On Going Task",
                             onPressed: () {
-                              _bloc.add(TodoListTabOnGoingTaskEvent(
-                                  selectedDateTask));
+                              _bloc.add(TodoListTabOnGoingTaskEvent());
                             })),
                     Expanded(
                         child: buttonTab(
                             isActive: isTabCompletedTask,
                             title: "Completed Task",
                             onPressed: () {
-                              _bloc.add(TodoListTabCompleteTaskEvent(
-                                  selectedDateTask));
+                              _bloc.add(TodoListTabCompleteTaskEvent());
                             })),
                   ],
                 ),
@@ -167,8 +162,7 @@ class TodoListPage extends StatelessWidget {
                                 leading: Checkbox(
                                     value: subTask.isCompleted,
                                     onChanged: (value) => _bloc.add(
-                                        TodoListCheckSubTaskEvent(
-                                            subTask, selectedDateTask))),
+                                        TodoListCheckSubTaskEvent(subTask))),
                                 title: Text(subTask.title),
                               );
                             }).toList(),
@@ -227,12 +221,22 @@ class TodoListPage extends StatelessWidget {
       children: [
         Checkbox(
           value: task.isCompleted,
-          onChanged: (value) =>
-              {_bloc.add(TodoListCheckTaskEvent(task, selectedDateTask))},
+          onChanged: (value) => {_bloc.add(TodoListCheckTaskEvent(task))},
         ),
         Expanded(
-            child: Text(
-                "${task.title}${task.subTasks != null && task.subTasks!.isNotEmpty ? " (${task.precentageCompletedSubTask}%)" : ""}")),
+          child: task.deadline == null
+              ? Text(
+                  "${task.title}${task.subTasks != null && task.subTasks!.isNotEmpty ? " (${task.precentageCompletedSubTask}%)" : ""}", style: TextStyle(fontSize: 16))
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        "${task.title}${task.subTasks != null && task.subTasks!.isNotEmpty ? " (${task.precentageCompletedSubTask}%)" : ""}", style: TextStyle(fontSize: 16)),
+                    Text("Deadline: ${convertDateTimeToString(task.deadline!)} ${DateTime.now().isAfter(task.deadline!) && task.isCompleted ? "(Due)" : ""}", style: TextStyle(fontSize: 12),)
+                  ],
+                ),
+        )
       ],
     );
   }
@@ -240,20 +244,17 @@ class TodoListPage extends StatelessWidget {
   void _showAddEditTaskDialog(BuildContext context, DialogTaskType type,
       {TaskModel? task}) {
     TextEditingController controllerTaskName = TextEditingController();
-    TextEditingController dateController = TextEditingController();
-    TextEditingController timeController = TextEditingController();
+    TextEditingController deadlineDateTimeController = TextEditingController();
 
-    DateTime selectedDate = task?.date ?? DateTime.now();
-    TimeOfDay selectedTime = TimeOfDay(
-        hour: task?.deadline?.hour ?? DateTime.now().hour,
-        minute: task?.deadline?.minute ?? DateTime.now().minute);
+    DateTime? selectedDeadlineDateTime = null;
 
     if (task != null && type == DialogTaskType.edit) {
       controllerTaskName.text = task.title;
-      dateController.text = convertDateToString(task.date);
-      if (task.deadline != null)
-        timeController.text =
-            convertTimeOfDayToString(TimeOfDay.fromDateTime(task.deadline!));
+      selectedDeadlineDateTime = task.deadline;
+      if (task.deadline != null) {
+        deadlineDateTimeController.text =
+            convertDateTimeToString(task.deadline!);
+      }
     }
 
     showDialog(
@@ -289,37 +290,50 @@ class TodoListPage extends StatelessWidget {
                   height: 20,
                 ),
                 TextField(
-                  controller: dateController,
+                  controller: deadlineDateTimeController,
                   readOnly: true,
                   decoration: InputDecoration(
-                    labelText: "Select Date",
+                    labelText: "Deadline",
                     suffixIcon: Icon(Icons.calendar_today),
                     border: OutlineInputBorder(),
                   ),
                   onTap: () async {
-                    var result = await _selectDate(context, selectedDate);
-                    if (result != null) {
-                      selectedDate = result;
-                      dateController.text = convertDateToString(result);
+                    DateTime? resultDate = await _selectDate(
+                        context, selectedDeadlineDateTime ?? DateTime.now());
+                    if (resultDate != null) {
+                      TimeOfDay? resultTime = await _selectTime(
+                          context,
+                          TimeOfDay.fromDateTime(
+                              selectedDeadlineDateTime ?? resultDate));
+                      if (resultTime != null) {
+                        selectedDeadlineDateTime = DateTime(
+                            resultDate.year,
+                            resultDate.month,
+                            resultDate.day,
+                            resultTime.hour,
+                            resultTime.minute);
+                        deadlineDateTimeController.text =
+                            convertDateTimeToString(selectedDeadlineDateTime!);
+                      }
                     }
                   },
                 ),
-                const SizedBox(height: 20),
-                TextField(
-                    controller: timeController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: "Select Deadline",
-                      suffixIcon: Icon(Icons.calendar_today),
-                      border: OutlineInputBorder(),
-                    ),
-                    onTap: () async {
-                      var result = await _selectTime(context, selectedTime);
-                      if (result != null) {
-                        selectedTime = result;
-                        timeController.text = convertTimeOfDayToString(result);
-                      }
-                    }),
+                // const SizedBox(height: 20),
+                // TextField(
+                //     controller: timeController,
+                //     readOnly: true,
+                //     decoration: InputDecoration(
+                //       labelText: "Select Deadline",
+                //       suffixIcon: Icon(Icons.calendar_today),
+                //       border: OutlineInputBorder(),
+                //     ),
+                //     onTap: () async {
+                //       var result = await _selectTime(context, selectedTime);
+                //       if (result != null) {
+                //         selectedTime = result;
+                //         timeController.text = convertTimeOfDayToString(result);
+                //       }
+                //     }),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -332,33 +346,17 @@ class TodoListPage extends StatelessWidget {
                     TextButton(
                         onPressed: () {
                           if (type == DialogTaskType.add) {
-                            _bloc.add(TodoListAddTaskEvent(
-                                TaskModel(
-                                    id: DeviceIdGenerator.generate(),
-                                    title: controllerTaskName.text,
-                                    date: selectedDate,
-                                    deadline: DateTime(
-                                        selectedDate.year,
-                                        selectedDate.month,
-                                        selectedDate.day,
-                                        selectedTime.hour,
-                                        selectedTime.minute)),
-                                selectedDateTask));
+                            _bloc.add(TodoListAddTaskEvent(TaskModel(
+                                id: DeviceIdGenerator.generate(),
+                                title: controllerTaskName.text,
+                                deadline: selectedDeadlineDateTime)));
                           } else {
-                            _bloc.add(TodoListUpdateTaskEvent(
-                                TaskModel(
-                                    id: task!.id,
-                                    title: controllerTaskName.text,
-                                    date: selectedDate,
-                                    deadline: DateTime(
-                                        selectedDate.year,
-                                        selectedDate.month,
-                                        selectedDate.day,
-                                        selectedTime.hour,
-                                        selectedTime.minute),
-                                    isCompleted: task.isCompleted,
-                                    subTasks: task.subTasks),
-                                selectedDateTask));
+                            _bloc.add(TodoListUpdateTaskEvent(TaskModel(
+                                id: task!.id,
+                                title: controllerTaskName.text,
+                                deadline: selectedDeadlineDateTime,
+                                isCompleted: task.isCompleted,
+                                subTasks: task.subTasks)));
                           }
                           Navigator.of(context).pop();
                         },
@@ -424,19 +422,15 @@ class TodoListPage extends StatelessWidget {
                     TextButton(
                         onPressed: () {
                           if (type == DialogTaskType.add) {
-                            _bloc.add(TodoListAddSubTaskEvent(
-                                SubTaskModel(
-                                    id: DeviceIdGenerator.generate(),
-                                    title: controllerTaskName.text,
-                                    idMaster: idMaster),
-                                selectedDateTask));
+                            _bloc.add(TodoListAddSubTaskEvent(SubTaskModel(
+                                id: DeviceIdGenerator.generate(),
+                                title: controllerTaskName.text,
+                                idMaster: idMaster)));
                           } else {
-                            _bloc.add(TodoListUpdateSubTaskEvent(
-                                SubTaskModel(
-                                    id: subTask!.id,
-                                    title: controllerTaskName.text,
-                                    idMaster: idMaster),
-                                selectedDateTask));
+                            _bloc.add(TodoListUpdateSubTaskEvent(SubTaskModel(
+                                id: subTask!.id,
+                                title: controllerTaskName.text,
+                                idMaster: idMaster)));
                           }
                           Navigator.of(context).pop();
                         },
@@ -452,17 +446,17 @@ class TodoListPage extends StatelessWidget {
     );
   }
 
-  String titleDate() {
-    DateTime now = DateTime.now();
-    DateTime today = DateTime(now.year, now.month, now.day);
-    if (selectedDateTask.isAfter(today)) {
-      return "TOMORROW";
-    } else if (selectedDateTask.isBefore(today)) {
-      return "YESTERDAY";
-    } else {
-      return "TODAY";
-    }
-  }
+  // String titleDate() {
+  //   DateTime now = DateTime.now();
+  //   DateTime today = DateTime(now.year, now.month, now.day);
+  //   if (selectedDateTask.isAfter(today)) {
+  //     return "TOMORROW";
+  //   } else if (selectedDateTask.isBefore(today)) {
+  //     return "YESTERDAY";
+  //   } else {
+  //     return "TODAY";
+  //   }
+  // }
 
   Future<DateTime?> _selectDate(BuildContext context, DateTime initial) async {
     DateTime? pickedDate = await showDatePicker(
@@ -494,7 +488,7 @@ class TodoListPage extends StatelessWidget {
       builder: (BuildContext context) {
         return Wrap(
           children: [
-            if (task != null)
+            if (task != null && isTabOnGoingTask)
               ListTile(
                 leading: Icon(Icons.add),
                 title: Text("Add Sub Task"),
@@ -511,7 +505,7 @@ class TodoListPage extends StatelessWidget {
                 Navigator.of(context).pop();
                 if (subTask != null) {
                   _showAddEditSubTaskDialog(
-                      context, DialogTaskType.edit, subTask!.idMaster,
+                      context, DialogTaskType.edit, subTask.idMaster,
                       subTask: subTask);
                 } else {
                   _showAddEditTaskDialog(context, DialogTaskType.edit,
@@ -524,10 +518,9 @@ class TodoListPage extends StatelessWidget {
               title: Text("Delete Task"),
               onTap: () {
                 if (task != null) {
-                  _bloc.add(TodoListDeleteTaskEvent(task, selectedDateTask));
+                  _bloc.add(TodoListDeleteTaskEvent(task));
                 } else {
-                  _bloc.add(
-                      TodoListDeleteSubTaskEvent(subTask!, selectedDateTask));
+                  _bloc.add(TodoListDeleteSubTaskEvent(subTask!));
                 }
                 Navigator.of(context).pop();
               },

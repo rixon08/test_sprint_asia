@@ -5,40 +5,31 @@ import 'package:test_sprint_asia/features/todo_list/domain/repositories/abstract
 
 class GetTaskImplApi extends AbstractTodoListApi {
   List<TaskModel> tasks = [
-    TaskModel(id: "1", date: DateTime.now(), title: "Buy groceries", subTasks: [
+    TaskModel(id: "1", title: "Buy groceries", subTasks: [
       SubTaskModel(id: "2", title: "Milk", idMaster: "1"),
       SubTaskModel(id: "3", title: "Bread", idMaster: "1"),
       SubTaskModel(id: "4", title: "Eggs", idMaster: "1"),
     ]),
-    TaskModel(id: "5", date: DateTime.now(), title: "Workout"),
-    TaskModel(id: "6", date: DateTime.now(), title: "Prepare presentation"),
-    TaskModel(id: "7", date: DateTime.now(), title: "Learn Flutter", subTasks: [
+    TaskModel(id: "5", title: "Workout"),
+    TaskModel(id: "6", title: "Prepare presentation"),
+    TaskModel(id: "7", title: "Learn Flutter", subTasks: [
       SubTaskModel(id: "8", title: "Widgets", idMaster: "7"),
-      SubTaskModel(
-          id: "9",
-          title: "State Management",
-          idMaster: "7"),
-      SubTaskModel(
-          id: "10", title: "Navigation", idMaster: "7"),
+      SubTaskModel(id: "9", title: "State Management", idMaster: "7"),
+      SubTaskModel(id: "10", title: "Navigation", idMaster: "7"),
     ])
   ];
 
   @override
-  Future<ApiResponse<List<TaskModel>?>> getDataCompletedTask(
-      DateTime date) async {
-    return ApiResponse(status: true, message: "success", data: tasks);
-  }
-
-  @override
-  Future<ApiResponse<List<TaskModel>?>> getDataOnGoingTask(
-      DateTime date) async {
+  Future<ApiResponse<List<TaskModel>?>> getDataCompletedTask() async {
     return ApiResponse(
         status: true,
         message: "success",
-        data: tasks
-            .where((e) => DateTime(date.year, date.month, date.day).isAtSameMomentAs(
-                DateTime(e.date.year, e.date.month, e.date.day)))
-            .toList());
+        data: tasks.where((e) => e.isCompleted).toList());
+  }
+
+  @override
+  Future<ApiResponse<List<TaskModel>?>> getDataOnGoingTask() async {
+    return ApiResponse(status: true, message: "success", data: tasks.where((e) => !e.isCompleted).toList());
   }
 
   @override
