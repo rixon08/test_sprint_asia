@@ -10,6 +10,7 @@
 4.Update/Edit a task
 5.Check/Tick to complete the task, upon complete, the task will be removed from "on-going tasklist(s)"
 6.Show completed/history task(s)
+<img src="https://github.com/rixon08/test_sprint_asia/blob/master/a.gif" width="400">
 ![](https://github.com/rixon08/test_sprint_asia/blob/master/a.gif)
 
 ### For additional features:
