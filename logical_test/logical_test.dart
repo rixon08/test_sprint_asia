@@ -9,14 +9,12 @@ List<int> gradingStudents(List<int> grades) {
 }
 
 void main() {
-  // Masukkan jumlah siswa
   print("Input");
-  int n = int.parse(stdin.readLineSync()!);
+  int n = checkNumberStudentInput();
   List<int> grades = [];
 
-  // Masukkan nilai siswa
   for (int i = 0; i < n; i++) {
-    grades.add(int.parse(stdin.readLineSync()!));
+    grades.add(checkGradeInput());
   }
 
   print("Output");
@@ -25,4 +23,34 @@ void main() {
     print("${result[i]}");
   }
   
+}
+
+int checkNumberStudentInput(){
+  bool isSuccessInput = false;
+  int numberStudent = 0;
+  while(!isSuccessInput) {
+    int input = int.parse(stdin.readLineSync()!);
+    if (input >= 1 && input <= 60) {
+      isSuccessInput = true;
+      numberStudent = input;
+    } else {
+      print("Number must be 1 <= n <= 60");
+    }
+  }
+  return numberStudent;
+}
+
+int checkGradeInput(){
+  bool isSuccessInput = false;
+  int grade = 0;
+  while(!isSuccessInput) {
+    int input = int.parse(stdin.readLineSync()!);
+    if (input >= 0 && input <= 100) {
+      isSuccessInput = true;
+      grade = input;
+    } else {
+      print("Number must be 0 <= n <= 100");
+    }
+  }
+  return grade;
 }
