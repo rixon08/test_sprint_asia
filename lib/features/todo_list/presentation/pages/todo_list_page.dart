@@ -297,6 +297,7 @@ class TodoListPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 TextField(
                   controller: controllerTaskName,
+                  textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
                     labelText: "Task Name",
                     border: OutlineInputBorder(),
@@ -421,8 +422,9 @@ class TodoListPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 TextField(
                   controller: controllerTaskName,
+                  textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    labelText: "Task Name",
+                    labelText: "Sub Task Name",
                     border: OutlineInputBorder(),
                   ),
                 ),
