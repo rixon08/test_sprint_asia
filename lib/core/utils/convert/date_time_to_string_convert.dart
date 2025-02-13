@@ -15,3 +15,8 @@ String convertDateTimeToString(DateTime date){
   return dateFormat.format(date);
 }
 
+String convertDateTimeToStringForDB(DateTime date){
+  final dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+  return dateFormat.format(date);
+}
+

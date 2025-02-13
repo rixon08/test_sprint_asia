@@ -1,14 +1,19 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:test_sprint_asia/core/utils/convert/bool_converter_json.dart';
+import 'package:test_sprint_asia/core/utils/convert/datetime_convert_json.dart';
 import 'package:test_sprint_asia/features/todo_list/domain/models/sub_task_model.dart';
 
 part 'task_model.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class TaskModel {
-  String id;
+  int id;
   String title;
+  @BoolConverter()
   bool isCompleted;
+  @DateTimeConverter()
   DateTime? deadline;
+  @DateTimeConverter()
   DateTime? completedDate;
   List<SubTaskModel>? subTasks;
 
@@ -32,6 +37,10 @@ class TaskModel {
 
   factory TaskModel.fromJson(Map<String, dynamic> json) =>
       _$TaskModelFromJson(json);
+
+  static List<TaskModel> fromJsonList(List? json) {
+    return json?.map((e) => TaskModel.fromJson(e)).toList() ?? [];
+  }
 
   void setCompleteTask(bool isChecked) {
     isCompleted = isChecked;

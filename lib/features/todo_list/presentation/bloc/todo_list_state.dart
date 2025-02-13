@@ -6,6 +6,18 @@ sealed class TodoListState {}
 final class TodoListInitialState extends TodoListState {
 }
 
+final class TodoListLoadingState extends TodoListState {
+}
+
+final class TodoListShowErrorMessageState extends TodoListState {
+  final String errorMessage;
+  
+  TodoListShowErrorMessageState(this.errorMessage);
+}
+
+final class TodoListCloseLoadingState extends TodoListState {
+}
+
 final class TodoListLoadingGetOnGoingTaskState extends TodoListState {
 }
 

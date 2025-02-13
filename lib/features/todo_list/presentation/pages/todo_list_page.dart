@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:test_sprint_asia/core/network/utils/convert_date_time_to_string.dart';
-import 'package:test_sprint_asia/core/network/utils/device_id_generator.dart';
-import 'package:test_sprint_asia/core/network/utils/injection.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:test_sprint_asia/core/utils/convert/date_time_to_string_convert.dart';
+import 'package:test_sprint_asia/core/utils/injection.dart';
 import 'package:test_sprint_asia/features/todo_list/domain/models/sub_task_model.dart';
 import 'package:test_sprint_asia/features/todo_list/domain/models/task_model.dart';
 import 'package:test_sprint_asia/features/todo_list/domain/usecases/add_sub_task_usecase.dart';
@@ -34,8 +34,13 @@ class TodoListPage extends StatelessWidget {
 
   List<TaskModel> tasksOnGoing = [];
 
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+
   bool isTabCompletedTask = false;
   bool isTabOnGoingTask = true;
+  bool isShowLoadingDialog = false;
+  bool isShowErrorDialog = false;
 
   TodoListPage({super.key});
 
@@ -60,6 +65,13 @@ class TodoListPage extends StatelessWidget {
         body: BlocConsumer<TodoListBloc, TodoListState>(
           bloc: _bloc,
           listener: (context, state) {
+            if (state is TodoListLoadingState) {
+              if (!isShowLoadingDialog) showLoadingDialog(context);
+            } else if (isShowLoadingDialog) {
+              isShowLoadingDialog = false;
+              Navigator.of(context).pop();
+            }
+
             if (state is TodoListGetOnGoingTaskCompletedState) {
               tasksOnGoing.clear();
               tasksOnGoing.addAll(state.listTaskModel);
@@ -69,6 +81,12 @@ class TodoListPage extends StatelessWidget {
             } else if (state is TodoListTabCompletedTaskState) {
               isTabCompletedTask = true;
               isTabOnGoingTask = false;
+            } else if (state is TodoListShowErrorMessageState) {
+              if (isShowErrorDialog) {
+                Navigator.of(context).pop();
+              } else {
+                showErrorDialog(context, state.errorMessage);
+              }
             }
           },
           builder: (context, state) {
@@ -83,14 +101,16 @@ class TodoListPage extends StatelessWidget {
                             isActive: isTabOnGoingTask,
                             title: "On Going Task",
                             onPressed: () {
-                              _bloc.add(TodoListTabOnGoingTaskEvent());
+                              if (!isTabOnGoingTask)
+                                _bloc.add(TodoListTabOnGoingTaskEvent());
                             })),
                     Expanded(
                         child: buttonTab(
                             isActive: isTabCompletedTask,
                             title: "Completed Task",
                             onPressed: () {
-                              _bloc.add(TodoListTabCompleteTaskEvent());
+                              if (!isTabCompletedTask)
+                                _bloc.add(TodoListTabCompleteTaskEvent());
                             })),
                   ],
                 ),
@@ -102,44 +122,56 @@ class TodoListPage extends StatelessWidget {
                   height: 10,
                 ),
                 Expanded(
-                  child: ListView(
-                    children: tasksOnGoing.map((task) {
-                      if (task.subTasks != null && task.subTasks!.isNotEmpty) {
-                        return GestureDetector(
-                          onLongPress: () {
-                            _showBottomSheet(context, task: task);
-                          },
-                          child: ExpansionTile(
-                            title: customCheckBoxWidget(task),
-                            children: task.subTasks!.map((subTask) {
-                              return ListTile(
-                                onLongPress: () {
-                                  _showBottomSheet(context, subTask: subTask);
-                                },
-                                dense: false,
-                                leading: Checkbox(
-                                    value: subTask.isCompleted,
-                                    onChanged: (value) => _bloc.add(
-                                        TodoListCheckSubTaskEvent(subTask))),
-                                title: Text(subTask.title),
-                              );
-                            }).toList(),
-                          ),
-                        );
-                      } else {
-                        return Material(
-                          child: InkWell(
+                  child: SmartRefresher(
+                    controller: _refreshController,
+                    onRefresh: () {
+                      if (isTabOnGoingTask)
+                        _bloc.add(TodoListTabOnGoingTaskEvent());
+                      else
+                        _bloc.add(TodoListTabCompleteTaskEvent());
+                      _refreshController.refreshCompleted();
+                    },
+                    enablePullUp: true,
+                    child: ListView(
+                      children: tasksOnGoing.map((task) {
+                        if (task.subTasks != null &&
+                            task.subTasks!.isNotEmpty) {
+                          return GestureDetector(
                             onLongPress: () {
                               _showBottomSheet(context, task: task);
                             },
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.0),
-                              child: customCheckBoxWidget(task),
+                            child: ExpansionTile(
+                              title: customCheckBoxWidget(task),
+                              children: task.subTasks!.map((subTask) {
+                                return ListTile(
+                                  onLongPress: () {
+                                    _showBottomSheet(context, subTask: subTask);
+                                  },
+                                  dense: false,
+                                  leading: Checkbox(
+                                      value: subTask.isCompleted,
+                                      onChanged: (value) => _bloc.add(
+                                          TodoListCheckSubTaskEvent(subTask))),
+                                  title: Text(subTask.title),
+                                );
+                              }).toList(),
                             ),
-                          ),
-                        );
-                      }
-                    }).toList(),
+                          );
+                        } else {
+                          return Material(
+                            child: InkWell(
+                              onLongPress: () {
+                                _showBottomSheet(context, task: task);
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                                child: customCheckBoxWidget(task),
+                              ),
+                            ),
+                          );
+                        }
+                      }).toList(),
+                    ),
                   ),
                 ),
               ],
@@ -193,10 +225,31 @@ class TodoListPage extends StatelessWidget {
                     Text(
                         "${task.title}${task.subTasks != null && task.subTasks!.isNotEmpty ? " (${task.precentageCompletedSubTask}%)" : ""}",
                         style: TextStyle(fontSize: 16)),
-                    Text(
-                      "Deadline: ${convertDateTimeToString(task.deadline!)} ${DateTime.now().isAfter(task.deadline!) && (task.completedDate == null || (task.completedDate != null && task.completedDate!.isAfter(task.deadline!))) ? "(Due)" : ""}",
-                      style: TextStyle(fontSize: 12),
-                    )
+                    RichText(
+                        text: TextSpan(
+                            style: TextStyle(color: Colors.black, fontSize: 12),
+                            children: [
+                          TextSpan(
+                              text:
+                                  "Deadline: ${convertDateTimeToString(task.deadline!)}",
+                              style: TextStyle(
+                                  color: const Color.fromARGB(
+                                      255, 130, 130, 130))),
+                          if (DateTime.now().isAfter(task.deadline!) &&
+                              (task.completedDate == null ||
+                                  (task.completedDate != null &&
+                                      task.completedDate!
+                                          .isAfter(task.deadline!))))
+                            TextSpan(
+                                text: " (Due)",
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold))
+                        ])),
+                    // Text(
+                    //   "Deadline: ${convertDateTimeToString(task.deadline!)} ${DateTime.now().isAfter(task.deadline!) && (task.completedDate == null || (task.completedDate != null && task.completedDate!.isAfter(task.deadline!))) ? "(Due)" : ""}",
+                    //   style: TextStyle(fontSize: 12),
+                    // )
                   ],
                 ),
         )
@@ -310,7 +363,7 @@ class TodoListPage extends StatelessWidget {
                         onPressed: () {
                           if (type == DialogTaskType.add) {
                             _bloc.add(TodoListAddTaskEvent(TaskModel(
-                                id: DeviceIdGenerator.generate(),
+                                id: 0,
                                 title: controllerTaskName.text,
                                 deadline: selectedDeadlineDateTime)));
                           } else {
@@ -336,7 +389,7 @@ class TodoListPage extends StatelessWidget {
   }
 
   void _showAddEditSubTaskDialog(
-      BuildContext context, DialogTaskType type, String idMaster,
+      BuildContext context, DialogTaskType type, int idMaster,
       {SubTaskModel? subTask}) {
     TextEditingController controllerTaskName = TextEditingController();
 
@@ -386,7 +439,7 @@ class TodoListPage extends StatelessWidget {
                         onPressed: () {
                           if (type == DialogTaskType.add) {
                             _bloc.add(TodoListAddSubTaskEvent(SubTaskModel(
-                                id: DeviceIdGenerator.generate(),
+                                id: 0,
                                 title: controllerTaskName.text,
                                 idMaster: idMaster)));
                           } else {
@@ -489,6 +542,62 @@ class TodoListPage extends StatelessWidget {
               },
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void showLoadingDialog(BuildContext context) {
+    isShowLoadingDialog = true;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return PopScope(
+          canPop: false,
+          child: Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(width: 20),
+                  Text("Loading..."),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.error, color: Colors.red),
+                SizedBox(width: 10),
+                Text("Error", style: TextStyle(color: Colors.red)),
+              ],
+            ),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("OK", style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
         );
       },
     );

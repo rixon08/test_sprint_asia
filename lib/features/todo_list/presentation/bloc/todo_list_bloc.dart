@@ -46,65 +46,92 @@ class TodoListBloc extends Bloc<TodoListEvent, TodoListState> {
     on<TodoListInitialEvent>((event, emit) {});
 
     on<TodoListGetOnGoingTaskEvent>((event, emit) async {
+      emit(TodoListLoadingState());
       var result = await getAllOnGoingTask.call();
       if (result.isSuccess) {
         emit(TodoListGetOnGoingTaskCompletedState(result.data!));
+      } else {
+        emit(TodoListShowErrorMessageState(result.message));
       }
     });
 
     on<TodoListCheckTaskEvent>((event, emit) async {
+      emit(TodoListLoadingState());
       var result = await updateCheckTask.call(event.taskModel);
       if (result.isSuccess) {
         await getTask(emit);
+      } else {
+        emit(TodoListShowErrorMessageState(result.message));
       }
     });
 
     on<TodoListCheckSubTaskEvent>((event, emit) async {
+      emit(TodoListLoadingState());
       var result = await updateCheckSubTask.call(event.taskModel);
       if (result.isSuccess) {
         await getTask(emit);
+      } else {
+        emit(TodoListShowErrorMessageState(result.message));
       }
     });
 
     on<TodoListAddTaskEvent>((event, emit) async {
+      emit(TodoListLoadingState());
       var result = await addTaskUseCase.call(event.taskModel);
       if (result.isSuccess) {
         await getTask(emit);
+      } else {
+        emit(TodoListShowErrorMessageState(result.message));
       }
     });
 
     on<TodoListAddSubTaskEvent>((event, emit) async {
+      emit(TodoListLoadingState());
       var result = await addSubTaskUseCase.call(event.taskModel);
       if (result.isSuccess) {
         await getTask(emit);
+      } else {
+        emit(TodoListShowErrorMessageState(result.message));
       }
     });
 
     on<TodoListUpdateTaskEvent>((event, emit) async {
+      emit(TodoListLoadingState());
       var result = await updateDataTaskUseCase.call(event.taskModel);
       if (result.isSuccess) {
         await getTask(emit);
+      } else {
+        emit(TodoListShowErrorMessageState(result.message));
       }
     });
 
     on<TodoListUpdateSubTaskEvent>((event, emit) async {
+      emit(TodoListLoadingState());
       var result = await updateDataSubTaskUseCase.call(event.taskModel);
       if (result.isSuccess) {
         await getOnGoingTask(emit);
+      } else {
+        emit(TodoListShowErrorMessageState(result.message));
       }
     });
 
     on<TodoListDeleteTaskEvent>((event, emit) async {
+      emit(TodoListLoadingState());
       var result = await deleteDataTaskUseCase.call(event.taskModel);
       if (result.isSuccess) {
         await getTask(emit);
+      } else {
+        emit(TodoListShowErrorMessageState(result.message));
       }
     });
 
     on<TodoListDeleteSubTaskEvent>((event, emit) async {
+      emit(TodoListLoadingState());
       var result = await deleteDataSubTaskUseCase.call(event.taskModel);
       if (result.isSuccess) {
         await getTask(emit);
+      } else {
+        emit(TodoListShowErrorMessageState(result.message));
       }
     });
 
@@ -126,6 +153,7 @@ class TodoListBloc extends Bloc<TodoListEvent, TodoListState> {
   }
 
   Future<void> getTask(Emitter<TodoListState> emit) async {
+    emit(TodoListLoadingState());
     if (isTabOnGoingTask) {
       await getOnGoingTask(emit);
     } else {
@@ -137,6 +165,8 @@ class TodoListBloc extends Bloc<TodoListEvent, TodoListState> {
     var result = await getAllOnGoingTask.call();
     if (result.isSuccess) {
       emit(TodoListGetOnGoingTaskCompletedState(result.data!));
+    } else {
+      emit(TodoListShowErrorMessageState(result.message));
     }
   }
 
@@ -144,6 +174,8 @@ class TodoListBloc extends Bloc<TodoListEvent, TodoListState> {
     var result = await getAllCompletedTask.call();
     if (result.isSuccess) {
       emit(TodoListGetOnGoingTaskCompletedState(result.data!));
+    } else {
+      emit(TodoListShowErrorMessageState(result.message));
     }
   }
 }
